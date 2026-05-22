@@ -1,0 +1,9 @@
+{
+  "id": "worldcanon-canon",
+  "name": "Worldbuilder Canon",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Canon retrieval and worldbuilding companion. Talks to the worldcanon sidecar.",
+  "author": "Adam Steen",
+  "isDesktopOnly": false
+}
