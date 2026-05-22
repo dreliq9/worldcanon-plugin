@@ -7,6 +7,7 @@ import { SearchModal } from "./search-modal";
 import { NewEntityModal } from "./new-entity-modal";
 import { AskModal } from "./ask-modal";
 import { CANON_VIEW_TYPE, CanonView } from "./canon-view";
+import { IDEATION_VIEW_TYPE, IdeationView } from "./ideation-view";
 
 export default class WorldcanonPlugin extends Plugin {
   settings!: WorldcanonSettings;
@@ -60,6 +61,14 @@ export default class WorldcanonPlugin extends Plugin {
         new AskModal(this.app, this.apiClient).open();
       },
     });
+
+    this.registerView(IDEATION_VIEW_TYPE, (leaf) => new IdeationView(leaf, this.apiClient));
+
+    this.addCommand({
+      id: "canon-develop-entity",
+      name: "Canon: Develop this entity",
+      callback: () => void this.openIdeationView(),
+    });
   }
 
   onunload(): void {
@@ -82,6 +91,10 @@ export default class WorldcanonPlugin extends Plugin {
       const view = leaf.view as { setApiClient(c: ApiClient): void };
       if (typeof view.setApiClient === "function") view.setApiClient(this.apiClient);
     }
+    for (const leaf of workspace.getLeavesOfType(IDEATION_VIEW_TYPE)) {
+      const view = leaf.view as unknown as { setApiClient(c: ApiClient): void };
+      if (typeof view.setApiClient === "function") view.setApiClient(this.apiClient);
+    }
   }
 
   restartStatusPolling(): void {
@@ -98,5 +111,21 @@ export default class WorldcanonPlugin extends Plugin {
       leaves = workspace.getLeavesOfType(CANON_VIEW_TYPE);
     }
     if (leaves[0]) workspace.revealLeaf(leaves[0]);
+  }
+
+  private async openIdeationView(): Promise<void> {
+    const workspace = this.app.workspace;
+    let leaves = workspace.getLeavesOfType(IDEATION_VIEW_TYPE);
+    if (leaves.length === 0) {
+      const rightLeaf = workspace.getRightLeaf(false);
+      if (!rightLeaf) return;
+      await rightLeaf.setViewState({ type: IDEATION_VIEW_TYPE, active: true });
+      leaves = workspace.getLeavesOfType(IDEATION_VIEW_TYPE);
+    }
+    if (leaves[0]) {
+      workspace.revealLeaf(leaves[0]);
+      const view = leaves[0].view as IdeationView;
+      void view.startForActiveNote();
+    }
   }
 }

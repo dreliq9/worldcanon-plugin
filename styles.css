@@ -105,3 +105,89 @@
   font-style: italic;
   margin-top: 0.25rem;
 }
+.worldcanon-ideation-view {
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  overflow-y: auto;
+  max-height: 100%;
+}
+.worldcanon-ideation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.worldcanon-ideation-header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+.worldcanon-ideation-question {
+  background: var(--background-secondary);
+  border-left: 3px solid var(--text-accent);
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+  font-style: italic;
+}
+.worldcanon-ideation-writer {
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0 0.5rem 1rem;
+  background: var(--background-primary-alt);
+  border-left: 3px solid var(--text-faint);
+}
+.worldcanon-ideation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0.5rem 0;
+}
+.worldcanon-ideation-textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  resize: vertical;
+}
+.worldcanon-ideation-status {
+  opacity: 0.6;
+  font-style: italic;
+  padding: 0.25rem 0;
+}
+.worldcanon-ideation-cards {
+  margin: 0.5rem 0;
+}
+.worldcanon-fact-card {
+  border: 1px solid var(--background-modifier-border);
+  border-left-width: 3px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  background: var(--background-secondary);
+}
+.worldcanon-fact-card-high { border-left-color: var(--text-success); }
+.worldcanon-fact-card-medium { border-left-color: var(--text-accent); }
+.worldcanon-fact-card-low { border-left-color: var(--text-warning); }
+.worldcanon-fact-card-accepted { opacity: 0.7; }
+.worldcanon-fact-card-rejected { opacity: 0.4; text-decoration: line-through; }
+.worldcanon-fact-card-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  font-size: 0.8rem;
+}
+.worldcanon-fact-card-entity { font-weight: 600; }
+.worldcanon-fact-card-confidence { opacity: 0.6; }
+.worldcanon-fact-card-claim {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.85rem;
+  resize: vertical;
+  margin-bottom: 0.5rem;
+}
+.worldcanon-fact-card-source {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin-bottom: 0.5rem;
+}
+.worldcanon-fact-card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
