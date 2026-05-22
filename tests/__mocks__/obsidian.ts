@@ -3,7 +3,9 @@
 // stub them so pure-logic modules (ApiClient, helpers) can be tested.
 
 export class Plugin {
-  app: unknown = {};
+  app: { workspace: { openLinkText(_link: string, _source: string, _newLeaf?: boolean): Promise<void> } } = {
+    workspace: { openLinkText: async () => {} },
+  };
   async loadData(): Promise<unknown> { return {}; }
   async saveData(_data: unknown): Promise<void> {}
   addStatusBarItem(): HTMLElement {
@@ -48,7 +50,10 @@ export class FuzzySuggestModal<T> {
 }
 export class ItemView {
   contentEl: HTMLElement = {} as HTMLElement;
-  app: { workspace: unknown; vault: unknown } = { workspace: {}, vault: {} };
+  app: { workspace: { openLinkText(_link: string, _source: string, _newLeaf?: boolean): Promise<void> }; vault: unknown } = {
+    workspace: { openLinkText: async () => {} },
+    vault: {},
+  };
   constructor(_leaf: unknown) {}
   registerEvent(_ref: unknown): void {}
 }
@@ -65,6 +70,8 @@ export class Setting {
   addDropdown(_cb: unknown) { return this; }
   addButton(_cb: unknown) { return this; }
 }
-export type App = unknown;
+export type App = {
+  workspace: { openLinkText(_link: string, _source: string, _newLeaf?: boolean): Promise<void> };
+};
 export type WorkspaceLeaf = unknown;
 export type TFile = { path: string; basename: string };

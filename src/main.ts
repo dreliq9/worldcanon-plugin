@@ -3,6 +3,7 @@ import { Plugin } from "obsidian";
 import { ApiClient } from "./api-client";
 import { DEFAULT_SETTINGS, WorldcanonSettings, WorldcanonSettingTab } from "./settings";
 import { StatusBar } from "./status-bar";
+import { SearchModal } from "./search-modal";
 
 export default class WorldcanonPlugin extends Plugin {
   settings!: WorldcanonSettings;
@@ -21,6 +22,14 @@ export default class WorldcanonPlugin extends Plugin {
     this.statusBar.start();
 
     this.addSettingTab(new WorldcanonSettingTab(this.app, this));
+
+    this.addCommand({
+      id: "canon-search",
+      name: "Canon: Search",
+      callback: () => {
+        new SearchModal(this.app, this.apiClient).open();
+      },
+    });
   }
 
   onunload(): void {
