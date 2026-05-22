@@ -76,3 +76,20 @@ export interface EntityResponse {
 }
 
 export type EntityType = "character" | "place" | "faction" | "item" | "event";
+
+export interface AskResponse {
+  answer: string;
+  citations: string[];
+  hits: SearchHit[];
+}
+
+export interface ContradictionFinding {
+  entity: string;
+  new_claim: string;
+  conflicting_canon: string;
+  reasoning: string;
+}
+
+export interface ContradictionResponse {
+  findings: ContradictionFinding[];
+}

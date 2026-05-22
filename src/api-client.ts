@@ -1,4 +1,6 @@
 import type {
+  AskResponse,
+  ContradictionResponse,
   EntityResponse,
   Fact,
   Relationship,
@@ -23,6 +25,18 @@ export interface FactsParams {
   entity?: string;
   status?: string;
   chapter_max?: number;
+}
+
+export interface AskParams {
+  question: string;
+  corpus?: string[];
+  limit?: number;
+}
+
+export interface ContradictionCheckParams {
+  text: string;
+  entities?: string[];
+  scope?: string;
 }
 
 export class ApiClient {
@@ -77,6 +91,14 @@ export class ApiClient {
     return this.getJson<{ relationships: Relationship[] }>(path);
   }
 
+  async ask(params: AskParams): Promise<AskResponse> {
+    return this.postJson<AskResponse>("/ask", params);
+  }
+
+  async contradictionCheck(params: ContradictionCheckParams): Promise<ContradictionResponse> {
+    return this.postJson<ContradictionResponse>("/contradiction-check", params);
+  }
+
   private async getJson<T>(path: string): Promise<T> {
     let res: Response;
     try {
@@ -92,6 +114,44 @@ export class ApiClient {
     }
     if (!res.ok) {
       const detail = res.status === 404 ? "not found" : `${res.status} ${res.statusText}`;
+      throw new Error(`sidecar request failed: ${path} (${detail})`);
+    }
+    return (await res.json()) as T;
+  }
+
+  private async postJson<T>(path: string, body: unknown): Promise<T> {
+    let res: Response;
+    try {
+      res = await fetch(`${this.baseUrl}${path}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (err) {
+      throw new ApiUnavailableError(
+        `sidecar unreachable at ${this.baseUrl}`,
+        err,
+      );
+    }
+    if (!res.ok) {
+      let detail = `${res.status} ${res.statusText}`;
+      try {
+        const payload = await res.json();
+        if (payload?.detail?.status === "llm_unavailable") {
+          throw new Error(
+            `llm_unavailable: ${payload.detail.reason ?? "no reason"}`,
+          );
+        }
+        if (payload?.detail) detail = JSON.stringify(payload.detail);
+      } catch (jsonErr) {
+        if (jsonErr instanceof Error && jsonErr.message.includes("llm_unavailable")) {
+          throw jsonErr;
+        }
+        // fall through with the status detail
+      }
       throw new Error(`sidecar request failed: ${path} (${detail})`);
     }
     return (await res.json()) as T;
