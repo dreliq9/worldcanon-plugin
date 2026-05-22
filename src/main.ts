@@ -4,6 +4,7 @@ import { ApiClient } from "./api-client";
 import { DEFAULT_SETTINGS, WorldcanonSettings, WorldcanonSettingTab } from "./settings";
 import { StatusBar } from "./status-bar";
 import { SearchModal } from "./search-modal";
+import { NewEntityModal } from "./new-entity-modal";
 
 export default class WorldcanonPlugin extends Plugin {
   settings!: WorldcanonSettings;
@@ -28,6 +29,16 @@ export default class WorldcanonPlugin extends Plugin {
       name: "Canon: Search",
       callback: () => {
         new SearchModal(this.app, this.apiClient).open();
+      },
+    });
+
+    this.addCommand({
+      id: "canon-new-entity",
+      name: "Canon: New entity",
+      callback: () => {
+        new NewEntityModal(this.app, (path) => {
+          void this.app.workspace.openLinkText(path, "", false);
+        }).open();
       },
     });
   }
