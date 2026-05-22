@@ -8,6 +8,7 @@ import { NewEntityModal } from "./new-entity-modal";
 import { AskModal } from "./ask-modal";
 import { CANON_VIEW_TYPE, CanonView } from "./canon-view";
 import { IDEATION_VIEW_TYPE, IdeationView } from "./ideation-view";
+import { FACT_PROPOSAL_VIEW_TYPE, FactProposalView } from "./fact-proposal-view";
 
 export default class WorldcanonPlugin extends Plugin {
   settings!: WorldcanonSettings;
@@ -69,6 +70,20 @@ export default class WorldcanonPlugin extends Plugin {
       name: "Canon: Develop this entity",
       callback: () => void this.openIdeationView(),
     });
+
+    this.registerView(FACT_PROPOSAL_VIEW_TYPE, (leaf) => new FactProposalView(leaf, this.apiClient));
+
+    this.addCommand({
+      id: "canon-process-to-canon",
+      name: "Canon: Process to canon",
+      callback: () => void this.openFactProposalView("process"),
+    });
+
+    this.addCommand({
+      id: "canon-extract-facts-from-selection",
+      name: "Canon: Extract facts from selection",
+      callback: () => void this.openFactProposalView("selection"),
+    });
   }
 
   onunload(): void {
@@ -92,6 +107,10 @@ export default class WorldcanonPlugin extends Plugin {
       if (typeof view.setApiClient === "function") view.setApiClient(this.apiClient);
     }
     for (const leaf of workspace.getLeavesOfType(IDEATION_VIEW_TYPE)) {
+      const view = leaf.view as unknown as { setApiClient(c: ApiClient): void };
+      if (typeof view.setApiClient === "function") view.setApiClient(this.apiClient);
+    }
+    for (const leaf of workspace.getLeavesOfType(FACT_PROPOSAL_VIEW_TYPE)) {
       const view = leaf.view as unknown as { setApiClient(c: ApiClient): void };
       if (typeof view.setApiClient === "function") view.setApiClient(this.apiClient);
     }
@@ -126,6 +145,23 @@ export default class WorldcanonPlugin extends Plugin {
       workspace.revealLeaf(leaves[0]);
       const view = leaves[0].view as IdeationView;
       void view.startForActiveNote();
+    }
+  }
+
+  private async openFactProposalView(mode: "process" | "selection"): Promise<void> {
+    const workspace = this.app.workspace;
+    let leaves = workspace.getLeavesOfType(FACT_PROPOSAL_VIEW_TYPE);
+    if (leaves.length === 0) {
+      const rightLeaf = workspace.getRightLeaf(false);
+      if (!rightLeaf) return;
+      await rightLeaf.setViewState({ type: FACT_PROPOSAL_VIEW_TYPE, active: true });
+      leaves = workspace.getLeavesOfType(FACT_PROPOSAL_VIEW_TYPE);
+    }
+    if (leaves[0]) {
+      workspace.revealLeaf(leaves[0]);
+      const view = leaves[0].view as FactProposalView;
+      if (mode === "process") void view.processActiveNote();
+      else void view.processSelection();
     }
   }
 }
