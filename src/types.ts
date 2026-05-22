@@ -93,3 +93,28 @@ export interface ContradictionFinding {
 export interface ContradictionResponse {
   findings: ContradictionFinding[];
 }
+
+export interface IdeationStartResponse {
+  session_id: string;
+  first_question: string;
+}
+
+export interface ProposedFact {
+  claim: string;
+  confidence: "high" | "medium" | "low";
+}
+
+export interface IdeationRespondResponse {
+  proposed_facts: ProposedFact[];
+  next_question: string | null;
+}
+
+export interface EntityProposedFact {
+  entity: string;
+  claim: string;
+  confidence: "high" | "medium" | "low";
+}
+
+export interface ProposeFactsResponse {
+  proposed_facts: EntityProposedFact[];
+}

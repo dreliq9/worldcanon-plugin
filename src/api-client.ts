@@ -3,6 +3,9 @@ import type {
   ContradictionResponse,
   EntityResponse,
   Fact,
+  IdeationRespondResponse,
+  IdeationStartResponse,
+  ProposeFactsResponse,
   Relationship,
   SearchResponse,
   StatsResponse,
@@ -37,6 +40,19 @@ export interface ContradictionCheckParams {
   text: string;
   entities?: string[];
   scope?: string;
+}
+
+export interface StartIdeationParams {
+  entity: string;
+}
+
+export interface RespondToIdeationParams {
+  answer: string;
+}
+
+export interface ProposeFactsParams {
+  text: string;
+  source: string;
 }
 
 export class ApiClient {
@@ -97,6 +113,24 @@ export class ApiClient {
 
   async contradictionCheck(params: ContradictionCheckParams): Promise<ContradictionResponse> {
     return this.postJson<ContradictionResponse>("/contradiction-check", params);
+  }
+
+  async startIdeation(params: StartIdeationParams): Promise<IdeationStartResponse> {
+    return this.postJson<IdeationStartResponse>("/ideation/start", params);
+  }
+
+  async respondToIdeation(
+    sessionId: string,
+    params: RespondToIdeationParams,
+  ): Promise<IdeationRespondResponse> {
+    return this.postJson<IdeationRespondResponse>(
+      `/ideation/${encodeURIComponent(sessionId)}/respond`,
+      params,
+    );
+  }
+
+  async proposeFacts(params: ProposeFactsParams): Promise<ProposeFactsResponse> {
+    return this.postJson<ProposeFactsResponse>("/propose-facts", params);
   }
 
   private async getJson<T>(path: string): Promise<T> {
