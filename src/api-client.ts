@@ -1,5 +1,6 @@
 import type {
   AskResponse,
+  CaptureResponse,
   ContradictionResponse,
   EntityResponse,
   Fact,
@@ -9,6 +10,7 @@ import type {
   Relationship,
   SearchResponse,
   StatsResponse,
+  UnprocessedBrainstormResponse,
 } from "./types";
 
 export class ApiUnavailableError extends Error {
@@ -53,6 +55,13 @@ export interface RespondToIdeationParams {
 export interface ProposeFactsParams {
   text: string;
   source: string;
+}
+
+export interface CaptureParams {
+  text: string;
+  source?: string;
+  entities?: string[];
+  topics?: string[];
 }
 
 export class ApiClient {
@@ -131,6 +140,14 @@ export class ApiClient {
 
   async proposeFacts(params: ProposeFactsParams): Promise<ProposeFactsResponse> {
     return this.postJson<ProposeFactsResponse>("/propose-facts", params);
+  }
+
+  async capture(params: CaptureParams): Promise<CaptureResponse> {
+    return this.postJson<CaptureResponse>("/capture", params);
+  }
+
+  async unprocessedBrainstorm(): Promise<UnprocessedBrainstormResponse> {
+    return this.getJson<UnprocessedBrainstormResponse>("/unprocessed-brainstorm");
   }
 
   private async getJson<T>(path: string): Promise<T> {

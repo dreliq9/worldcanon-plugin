@@ -118,3 +118,19 @@ export interface EntityProposedFact {
 export interface ProposeFactsResponse {
   proposed_facts: EntityProposedFact[];
 }
+
+export interface CaptureResponse {
+  status: "ok";
+  path: string;
+}
+
+export interface UnprocessedBrainstormNote {
+  source_path: string;
+  preview: string;
+  date: string | null;
+  mtime: number;
+}
+
+export interface UnprocessedBrainstormResponse {
+  notes: UnprocessedBrainstormNote[];
+}
