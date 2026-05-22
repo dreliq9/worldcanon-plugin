@@ -9,6 +9,7 @@ import { AskModal } from "./ask-modal";
 import { CANON_VIEW_TYPE, CanonView } from "./canon-view";
 import { IDEATION_VIEW_TYPE, IdeationView } from "./ideation-view";
 import { FACT_PROPOSAL_VIEW_TYPE, FactProposalView } from "./fact-proposal-view";
+import { logBrainstorm } from "./log-brainstorm";
 
 export default class WorldcanonPlugin extends Plugin {
   settings!: WorldcanonSettings;
@@ -83,6 +84,12 @@ export default class WorldcanonPlugin extends Plugin {
       id: "canon-extract-facts-from-selection",
       name: "Canon: Extract facts from selection",
       callback: () => void this.openFactProposalView("selection"),
+    });
+
+    this.addCommand({
+      id: "canon-log-brainstorm",
+      name: "Canon: Log brainstorm",
+      callback: () => void logBrainstorm(this.app, this.apiClient),
     });
   }
 
