@@ -6,7 +6,15 @@ export class Plugin {
   app: unknown = {};
   async loadData(): Promise<unknown> { return {}; }
   async saveData(_data: unknown): Promise<void> {}
-  addStatusBarItem(): HTMLElement { return {} as HTMLElement; }
+  addStatusBarItem(): HTMLElement {
+    // Return a stub with methods that status-bar.ts uses
+    const el = {
+      addClass: (_c: string) => {},
+      removeClass: (_c: string) => {},
+      setText: (_t: string) => {},
+    } as unknown as HTMLElement;
+    return el;
+  }
   addSettingTab(_tab: unknown): void {}
   addCommand(_cmd: unknown): void {}
   registerView(_t: string, _f: unknown): void {}
