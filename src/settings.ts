@@ -52,5 +52,31 @@ export class WorldcanonSettingTab extends PluginSettingTab {
             }
           }),
       );
+
+    (containerEl as { createEl(t: string, o?: unknown): unknown }).createEl("h3", { text: "Sidecar status" });
+
+    const statusEl = (containerEl as { createDiv(o: { cls: string }): HTMLElement & { setText(s: string): void } }).createDiv({ cls: "worldcanon-settings-status" });
+    statusEl.setText("Checking…");
+
+    void (async () => {
+      try {
+        const stats = await this.plugin.apiClient.stats();
+        const totalChunks = stats.corpora.reduce((s, c) => s + c.chunk_count, 0);
+        statusEl.setText(
+          `✓ Sidecar reachable. ${totalChunks} chunks, ${stats.fact_count} facts. Embedder: ${stats.embedder}.`,
+        );
+      } catch (err) {
+        statusEl.setText("✗ Sidecar unreachable. Start the sidecar process.");
+      }
+    })();
+
+    (containerEl as { createEl(t: string, o?: unknown): unknown }).createEl("h3", { text: "LLM" });
+    const llmHelp = (containerEl as { createDiv(o: { cls: string }): HTMLElement & { setText(s: string): void } }).createDiv({ cls: "worldcanon-settings-help" });
+    llmHelp.setText(
+      "LLM backend (local Ollama vs Ollama Cloud) and model name are configured server-side via " +
+      "WORLDCANON_LLM_BACKEND, WORLDCANON_OLLAMA_URL, WORLDCANON_OLLAMA_API_KEY, and " +
+      "WORLDCANON_LLM_MODEL environment variables on the sidecar process. " +
+      "See the worldcanon README for setup.",
+    );
   }
 }
