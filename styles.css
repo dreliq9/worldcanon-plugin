@@ -1,0 +1,49 @@
+.worldcanon-canon-view {
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+}
+.worldcanon-canon-view h2 {
+  margin-top: 0;
+  font-size: 1rem;
+  opacity: 0.85;
+}
+.worldcanon-canon-view h3 {
+  font-size: 0.9rem;
+  margin: 0.75rem 0 0.25rem;
+}
+.worldcanon-empty {
+  opacity: 0.6;
+  font-style: italic;
+}
+.worldcanon-error {
+  color: var(--text-error);
+  font-size: 0.85rem;
+}
+.worldcanon-fact-list {
+  margin: 0.25rem 0 0.5rem 0;
+  padding-left: 1rem;
+}
+.worldcanon-fact-status {
+  font-family: var(--font-monospace);
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+.worldcanon-fact-canon .worldcanon-fact-status {
+  color: var(--text-success);
+}
+.worldcanon-fact-draft .worldcanon-fact-status {
+  color: var(--text-accent);
+}
+.worldcanon-fact-retconned {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+.worldcanon-fact-proposed .worldcanon-fact-status {
+  color: var(--text-warning);
+}
+.worldcanon-status-ok {
+  color: var(--text-success);
+}
+.worldcanon-status-down {
+  color: var(--text-error);
+}
