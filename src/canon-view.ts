@@ -10,6 +10,7 @@ const WIKILINK = /\[\[([^\]|#]+?)(?:\|[^\]]+)?(?:#[^\]]+)?\]\]/g;
 
 export class CanonView extends ItemView {
   private currentNote: TFile | null = null;
+  private contradictionTimer: number | null = null;
 
   constructor(leaf: WorkspaceLeaf, private api: ApiClient) {
     super(leaf);
@@ -32,12 +33,17 @@ export class CanonView extends ItemView {
     const workspace = (this.app as unknown as { workspace: { on(ev: string, cb: () => void): unknown } }).workspace;
     const vault = (this.app as unknown as { vault: { on(ev: string, cb: () => void): unknown } }).vault;
     this.registerEvent(workspace.on("active-leaf-change", () => void this.refresh()) as unknown as EventRef);
-    this.registerEvent(vault.on("modify", () => void this.refresh()) as unknown as EventRef);
+    this.registerEvent(vault.on("modify", () => {
+      void this.refresh();
+      this.scheduleContradictionCheck();
+    }) as unknown as EventRef);
     await this.refresh();
   }
 
   async onClose(): Promise<void> {
-    /* nothing to clean up */
+    if (this.contradictionTimer !== null) {
+      window.clearTimeout(this.contradictionTimer);
+    }
   }
 
   setApiClient(api: ApiClient): void {
@@ -116,6 +122,57 @@ export class CanonView extends ItemView {
       status.setText(`[${fact.status}]`);
       (li as { appendText(s: string): void }).appendText(" ");
       (li as { appendText(s: string): void }).appendText(fact.claim);
+    }
+  }
+
+  private scheduleContradictionCheck(): void {
+    if (this.contradictionTimer !== null) {
+      window.clearTimeout(this.contradictionTimer);
+    }
+    this.contradictionTimer = window.setTimeout(() => void this.runContradictionCheck(), 2000);
+  }
+
+  private async runContradictionCheck(): Promise<void> {
+    const file = this.currentNote;
+    if (!file) return;
+    if (!file.path.startsWith("drafts/") && !file.path.startsWith("canon/")) return;
+    const vault = (this.app as { vault: { cachedRead(f: TFile): Promise<string> } }).vault;
+    const text = await vault.cachedRead(file);
+    let findings: { entity: string; new_claim: string; conflicting_canon: string; reasoning: string }[];
+    try {
+      const out = await this.api.contradictionCheck({ text });
+      findings = out.findings;
+    } catch (err) {
+      // Silent failure — contradictions are polish, don't disrupt the writer.
+      return;
+    }
+    this.renderContradictions(findings);
+  }
+
+  private renderContradictions(findings: { entity: string; new_claim: string; conflicting_canon: string; reasoning: string }[]): void {
+    const existing = (this.contentEl as HTMLElement).querySelector(".worldcanon-contradictions");
+    if (existing) existing.remove();
+    if (findings.length === 0) return;
+
+    const section = (this.contentEl as { createDiv(o: { cls: string }): HTMLElement })
+      .createDiv({ cls: "worldcanon-contradictions" });
+    const header = (section as { createEl(t: string, o: { cls: string }): { setText(s: string): void } })
+      .createEl("h3", { cls: "worldcanon-contradictions-header" });
+    header.setText(`⚠ Possible contradictions (${findings.length})`);
+    for (const f of findings) {
+      const card = (section as { createDiv(o: { cls: string }): HTMLElement }).createDiv({ cls: "worldcanon-contradiction-card" });
+      const head = (card as { createEl(t: string, o: { cls: string }): { setText(s: string): void } })
+        .createEl("div", { cls: "worldcanon-contradiction-entity" });
+      head.setText(f.entity);
+      const newClaim = (card as { createEl(t: string, o: { cls: string }): { setText(s: string): void } })
+        .createEl("div", { cls: "worldcanon-contradiction-new" });
+      newClaim.setText(`New: ${f.new_claim}`);
+      const canonEl = (card as { createEl(t: string, o: { cls: string }): { setText(s: string): void } })
+        .createEl("div", { cls: "worldcanon-contradiction-canon" });
+      canonEl.setText(`Canon: ${f.conflicting_canon}`);
+      const why = (card as { createEl(t: string, o: { cls: string }): { setText(s: string): void } })
+        .createEl("div", { cls: "worldcanon-contradiction-reason" });
+      why.setText(f.reasoning);
     }
   }
 }

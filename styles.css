@@ -73,3 +73,35 @@
 .worldcanon-citation-link:hover {
   text-decoration: underline;
 }
+.worldcanon-contradictions {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--background-modifier-border);
+}
+.worldcanon-contradictions-header {
+  color: var(--text-warning);
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem 0;
+}
+.worldcanon-contradiction-card {
+  border-left: 3px solid var(--text-warning);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  background: var(--background-secondary);
+  font-size: 0.85rem;
+}
+.worldcanon-contradiction-entity {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.worldcanon-contradiction-new {
+  color: var(--text-error);
+}
+.worldcanon-contradiction-canon {
+  opacity: 0.8;
+}
+.worldcanon-contradiction-reason {
+  opacity: 0.7;
+  font-style: italic;
+  margin-top: 0.25rem;
+}
