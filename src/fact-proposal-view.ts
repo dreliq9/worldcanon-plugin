@@ -6,10 +6,14 @@ import { renderFactCard } from "./fact-card";
 import { entityFolderForType } from "./new-entity-modal";
 import { insertFactIntoSheet } from "./fact-insertion";
 import type { EntityProposedFact, EntityType } from "./types";
+import { updateFrontmatterStatus } from "./frontmatter-status";
 
 export const FACT_PROPOSAL_VIEW_TYPE = "worldcanon-fact-proposal-view";
 
 export class FactProposalView extends ItemView {
+  private sourceFile: TFile | null = null;
+  private pendingCards = 0;
+
   constructor(leaf: WorkspaceLeaf, private api: ApiClient) {
     super(leaf);
   }
@@ -45,6 +49,7 @@ export class FactProposalView extends ItemView {
       new Notice("Open a note first.");
       return;
     }
+    this.sourceFile = file;
     const vault = (this.app as { vault: { read(f: TFile): Promise<string> } }).vault;
     const text = await vault.read(file);
     await this.run(file.path, text);
@@ -63,6 +68,7 @@ export class FactProposalView extends ItemView {
       new Notice("Select some text first.");
       return;
     }
+    this.sourceFile = null;  // selections never auto-flip a source note's status
     await this.run(`${file.path} (selection)`, text);
   }
 
@@ -82,6 +88,7 @@ export class FactProposalView extends ItemView {
           .setText("No facts extracted from this text.");
         return;
       }
+      this.pendingCards = out.proposed_facts.length;
       const cards = (this.contentEl as { createDiv(o: { cls: string }): HTMLElement })
         .createDiv({ cls: "worldcanon-proposal-cards" });
       for (const fact of out.proposed_facts) {
@@ -136,10 +143,32 @@ export class FactProposalView extends ItemView {
       {
         onAccept: async (data) => {
           await this.appendFactToEntitySheet(data.entity, data.claim, source);
+          this.pendingCards = Math.max(0, this.pendingCards - 1);
+          if (this.pendingCards === 0) await this.markBrainstormProcessed();
         },
-        onReject: () => {/* nothing */},
+        onReject: () => {
+          this.pendingCards = Math.max(0, this.pendingCards - 1);
+          if (this.pendingCards === 0) void this.markBrainstormProcessed();
+        },
       },
     );
+  }
+
+  private async markBrainstormProcessed(): Promise<void> {
+    const file = this.sourceFile;
+    if (!file) return;
+    if (!file.path.startsWith("brainstorm/")) return;
+    const vault = (this.app as { vault: { read(f: TFile): Promise<string>; modify(f: TFile, c: string): Promise<void> } }).vault;
+    try {
+      const before = await vault.read(file);
+      const after = updateFrontmatterStatus(before, "processed");
+      if (after !== before) {
+        await vault.modify(file, after);
+        new Notice(`Marked ${file.path} as processed.`, 2000);
+      }
+    } catch {
+      // Silent — don't block the proposal flow on a status update.
+    }
   }
 
   private async appendFactToEntitySheet(
