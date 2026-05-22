@@ -11,6 +11,7 @@ import { IDEATION_VIEW_TYPE, IdeationView } from "./ideation-view";
 import { FACT_PROPOSAL_VIEW_TYPE, FactProposalView } from "./fact-proposal-view";
 import { logBrainstorm } from "./log-brainstorm";
 import { UnprocessedBrainstormModal } from "./unprocessed-modal";
+import { SuggestNamesModal } from "./suggest-names-modal";
 
 export default class WorldcanonPlugin extends Plugin {
   settings!: WorldcanonSettings;
@@ -97,6 +98,14 @@ export default class WorldcanonPlugin extends Plugin {
       id: "canon-show-unprocessed",
       name: "Canon: Show unprocessed brainstorm",
       callback: () => void new UnprocessedBrainstormModal(this.app, this.apiClient).loadAndOpen(),
+    });
+
+    this.addCommand({
+      id: "canon-suggest-names",
+      name: "Canon: Suggest names",
+      callback: () => {
+        new SuggestNamesModal(this.app, this.apiClient).open();
+      },
     });
   }
 

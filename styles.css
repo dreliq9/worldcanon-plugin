@@ -214,3 +214,33 @@
 .worldcanon-proposal-cards {
   margin-top: 0.25rem;
 }
+.worldcanon-naming-status {
+  opacity: 0.6;
+  font-style: italic;
+  padding: 0.5rem 0;
+}
+.worldcanon-naming-results {
+  margin-top: 1rem;
+  border-top: 1px solid var(--background-modifier-border);
+  padding-top: 0.75rem;
+}
+.worldcanon-naming-card {
+  border-left: 3px solid var(--text-accent);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  background: var(--background-secondary);
+}
+.worldcanon-naming-card-added { opacity: 0.6; }
+.worldcanon-naming-name {
+  font-weight: 600;
+  font-size: 1rem;
+}
+.worldcanon-naming-reason {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin: 0.25rem 0 0.5rem 0;
+}
+.worldcanon-naming-actions {
+  display: flex;
+  gap: 0.5rem;
+}
