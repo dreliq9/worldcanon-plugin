@@ -10,6 +10,7 @@ import { CANON_VIEW_TYPE, CanonView } from "./canon-view";
 import { IDEATION_VIEW_TYPE, IdeationView } from "./ideation-view";
 import { FACT_PROPOSAL_VIEW_TYPE, FactProposalView } from "./fact-proposal-view";
 import { logBrainstorm } from "./log-brainstorm";
+import { UnprocessedBrainstormModal } from "./unprocessed-modal";
 
 export default class WorldcanonPlugin extends Plugin {
   settings!: WorldcanonSettings;
@@ -90,6 +91,12 @@ export default class WorldcanonPlugin extends Plugin {
       id: "canon-log-brainstorm",
       name: "Canon: Log brainstorm",
       callback: () => void logBrainstorm(this.app, this.apiClient),
+    });
+
+    this.addCommand({
+      id: "canon-show-unprocessed",
+      name: "Canon: Show unprocessed brainstorm",
+      callback: () => void new UnprocessedBrainstormModal(this.app, this.apiClient).loadAndOpen(),
     });
   }
 
