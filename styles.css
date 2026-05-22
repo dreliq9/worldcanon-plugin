@@ -47,3 +47,29 @@
 .worldcanon-status-down {
   color: var(--text-error);
 }
+.worldcanon-ask-answer {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  border-left: 3px solid var(--background-modifier-border);
+  font-size: 0.9rem;
+}
+.worldcanon-ask-text {
+  white-space: pre-wrap;
+}
+.worldcanon-ask-citations-header {
+  margin-top: 0.5rem;
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
+.worldcanon-ask-citations {
+  margin: 0;
+  padding-left: 1rem;
+}
+.worldcanon-citation-link {
+  cursor: pointer;
+  color: var(--text-accent);
+  text-decoration: none;
+}
+.worldcanon-citation-link:hover {
+  text-decoration: underline;
+}

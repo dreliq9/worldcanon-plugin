@@ -5,6 +5,7 @@ import { DEFAULT_SETTINGS, WorldcanonSettings, WorldcanonSettingTab } from "./se
 import { StatusBar } from "./status-bar";
 import { SearchModal } from "./search-modal";
 import { NewEntityModal } from "./new-entity-modal";
+import { AskModal } from "./ask-modal";
 import { CANON_VIEW_TYPE, CanonView } from "./canon-view";
 
 export default class WorldcanonPlugin extends Plugin {
@@ -50,6 +51,14 @@ export default class WorldcanonPlugin extends Plugin {
       id: "canon-open-pane",
       name: "Canon: Open pane",
       callback: () => void this.activateCanonView(),
+    });
+
+    this.addCommand({
+      id: "canon-ask",
+      name: "Canon: Ask about my world",
+      callback: () => {
+        new AskModal(this.app, this.apiClient).open();
+      },
     });
   }
 
