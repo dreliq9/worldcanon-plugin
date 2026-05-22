@@ -2,10 +2,12 @@ import type {
   AskResponse,
   CaptureResponse,
   ContradictionResponse,
+  CulturesResponse,
   EntityResponse,
   Fact,
   IdeationRespondResponse,
   IdeationStartResponse,
+  NameSuggestResponse,
   ProposeFactsResponse,
   Relationship,
   SearchResponse,
@@ -62,6 +64,13 @@ export interface CaptureParams {
   source?: string;
   entities?: string[];
   topics?: string[];
+}
+
+export interface SuggestNamesParams {
+  culture: string;
+  role?: string;
+  vibe?: string;
+  count?: number;
 }
 
 export class ApiClient {
@@ -148,6 +157,14 @@ export class ApiClient {
 
   async unprocessedBrainstorm(): Promise<UnprocessedBrainstormResponse> {
     return this.getJson<UnprocessedBrainstormResponse>("/unprocessed-brainstorm");
+  }
+
+  async listCultures(): Promise<CulturesResponse> {
+    return this.getJson<CulturesResponse>("/name/cultures");
+  }
+
+  async suggestNames(params: SuggestNamesParams): Promise<NameSuggestResponse> {
+    return this.postJson<NameSuggestResponse>("/name/suggest", params);
   }
 
   private async getJson<T>(path: string): Promise<T> {

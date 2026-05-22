@@ -134,3 +134,22 @@ export interface UnprocessedBrainstormNote {
 export interface UnprocessedBrainstormResponse {
   notes: UnprocessedBrainstormNote[];
 }
+
+export interface CultureSummary {
+  culture: string;
+  used_count: number;
+  candidate_count: number;
+}
+
+export interface CulturesResponse {
+  cultures: CultureSummary[];
+}
+
+export interface NameSuggestion {
+  name: string;
+  reasoning: string;
+}
+
+export interface NameSuggestResponse {
+  suggestions: NameSuggestion[];
+}
