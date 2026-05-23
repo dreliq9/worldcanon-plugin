@@ -305,3 +305,29 @@
 }
 .worldcanon-mentions-row-done { opacity: 0.5; }
 .worldcanon-mentions-loc { font-family: var(--font-monospace); font-size: 0.85rem; }
+.worldcanon-rename-status { opacity: 0.6; font-style: italic; padding: 0.25rem 0; }
+.worldcanon-rename-summary {
+  background: var(--background-secondary);
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+  border-left: 3px solid var(--text-accent);
+  font-size: 0.9rem;
+}
+.worldcanon-rename-rewrites {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  padding: 0.25rem;
+}
+.worldcanon-rename-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.2rem 0.4rem;
+}
+.worldcanon-rename-loc {
+  font-family: var(--font-monospace);
+  font-size: 0.8rem;
+}
+.worldcanon-rename-aliases { opacity: 0.8; font-size: 0.85rem; margin-bottom: 0.5rem; }
+.worldcanon-rename-aliases-list { margin: 0; padding-left: 1.2rem; }

@@ -14,6 +14,7 @@ import { UnprocessedBrainstormModal } from "./unprocessed-modal";
 import { SuggestNamesModal } from "./suggest-names-modal";
 import { TRIAGE_VIEW_TYPE, TriageView } from "./triage-view";
 import { UnlinkedMentionsModal } from "./unlinked-mentions-modal";
+import { RenameEntityModal } from "./rename-entity-modal";
 
 export default class WorldcanonPlugin extends Plugin {
   settings!: WorldcanonSettings;
@@ -123,6 +124,20 @@ export default class WorldcanonPlugin extends Plugin {
       name: "Canon: Find unlinked mentions",
       callback: () => {
         new UnlinkedMentionsModal(this.app, this.apiClient).open();
+      },
+    });
+
+    this.addCommand({
+      id: "canon-rename-entity",
+      name: "Canon: Rename entity",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file || !file.path.startsWith("entities/")) return false;
+        if (!checking) {
+          const oldName = file.basename;
+          new RenameEntityModal(this.app, this.apiClient, file, oldName).open();
+        }
+        return true;
       },
     });
   }
