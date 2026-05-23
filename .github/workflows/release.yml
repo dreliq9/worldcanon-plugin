@@ -33,10 +33,10 @@ jobs:
       - name: Assemble release folder
         run: |
           mkdir -p dist/release
-          cp manifest.json main.js styles.css install.sh install.ps1 INSTALL.md dist/release/ 2>/dev/null || true
           cp manifest.json main.js styles.css dist/release/
           cp install.sh dist/release/ 2>/dev/null || true
           cp install.ps1 dist/release/ 2>/dev/null || true
+          cp install.cmd dist/release/ 2>/dev/null || true
           cp INSTALL.md dist/release/ 2>/dev/null || true
           cd dist && zip -r worldcanon-plugin.zip release/
 
