@@ -6,6 +6,7 @@ export class Plugin {
   app: { workspace: { openLinkText(_link: string, _source: string, _newLeaf?: boolean): Promise<void> } } = {
     workspace: { openLinkText: async () => {} },
   };
+  manifest: { version: string } = { version: "0.0.0" };
   async loadData(): Promise<unknown> { return {}; }
   async saveData(_data: unknown): Promise<void> {}
   addStatusBarItem(): HTMLElement {

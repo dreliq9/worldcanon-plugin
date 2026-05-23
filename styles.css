@@ -351,3 +351,8 @@
   text-decoration: none;
 }
 .worldcanon-timeline-link:hover { text-decoration: underline; }
+.worldcanon-settings-version {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  margin-bottom: 0.5rem;
+}

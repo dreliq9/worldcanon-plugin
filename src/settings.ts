@@ -22,6 +22,9 @@ export class WorldcanonSettingTab extends PluginSettingTab {
 
     containerEl.createEl("h2", { text: "Worldbuilder Canon" });
 
+    const versionEl = containerEl.createDiv({ cls: "worldcanon-settings-version" });
+    versionEl.setText(`Plugin version: ${this.plugin.manifest.version}`);
+
     new Setting(containerEl)
       .setName("Sidecar URL")
       .setDesc("Base URL of the local worldcanon sidecar.")
@@ -63,7 +66,8 @@ export class WorldcanonSettingTab extends PluginSettingTab {
         const stats = await this.plugin.apiClient.stats();
         const totalChunks = stats.corpora.reduce((s, c) => s + c.chunk_count, 0);
         statusEl.setText(
-          `✓ Sidecar reachable. ${totalChunks} chunks, ${stats.fact_count} facts. Embedder: ${stats.embedder}.`,
+          `✓ Sidecar reachable. ${totalChunks} chunks, ${stats.fact_count} facts. ` +
+          `Embedder: ${stats.embedder}. LLM: ${stats.llm_model}.`,
         );
       } catch (err) {
         statusEl.setText("✗ Sidecar unreachable. Start the sidecar process.");
