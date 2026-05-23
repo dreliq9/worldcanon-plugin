@@ -34,6 +34,8 @@ export interface SearchResponse {
   results: SearchHit[];
 }
 
+export type PlayerVisibility = "secret" | "revealed" | "hinted" | "red_herring";
+
 export interface Fact {
   id: number;
   entity: string;
@@ -43,6 +45,8 @@ export interface Fact {
   chapter_index: number | null;
   source_file: string;
   created: number;
+  player_visibility?: PlayerVisibility;
+  revealed_in_session?: number | null;
 }
 
 export interface Relationship {

@@ -1,7 +1,7 @@
 import { ItemView, Notice, TFile, WorkspaceLeaf } from "obsidian";
 
 import type { ApiClient } from "./api-client";
-import { ApiUnavailableError } from "./api-client";
+import { ApiUnavailableError, LlmUnavailableError } from "./api-client";
 import type {
   InboxItem,
   TriageClassification,
@@ -110,8 +110,11 @@ export class TriageView extends ItemView {
       .catch((err) => {
         if (err instanceof ApiUnavailableError) {
           suggestionEl.setText("(sidecar unreachable)");
-        } else if (/llm_unavailable/i.test((err as Error).message)) {
-          suggestionEl.setText("(LLM unavailable — start Ollama)");
+        } else if (err instanceof LlmUnavailableError) {
+          // Triage inline cell is space-constrained — use a short label and
+          // expose the actionable hint as a tooltip.
+          suggestionEl.setText("(LLM unavailable — hover for details)");
+          (suggestionEl as { title?: string }).title = err.hint || err.reason;
         } else {
           suggestionEl.setText(`(error: ${(err as Error).message})`);
         }

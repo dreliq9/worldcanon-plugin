@@ -27,16 +27,46 @@ export class ApiUnavailableError extends Error {
   }
 }
 
+export class LlmUnavailableError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+    public readonly hint: string,
+    public readonly reason: string,
+  ) {
+    super(message);
+    this.name = "LlmUnavailableError";
+  }
+}
+
 export interface SearchParams {
   q: string;
   corpus?: string[];
   limit?: number;
 }
 
+export type ViewMode = "gm" | "player";
+
 export interface FactsParams {
   entity?: string;
   status?: string;
   chapter_max?: number;
+  view?: ViewMode;
+}
+
+export interface PlayerWikiEntry {
+  name: string;
+  source_path: string;
+  title: string | null;
+  body: string;
+  metadata: Record<string, unknown>;
+  facts: Fact[];
+}
+
+export interface PlayerWikiResponse {
+  generated_at: string;
+  entry_count: number;
+  entries: PlayerWikiEntry[];
 }
 
 export interface AskParams {
@@ -122,8 +152,9 @@ export class ApiClient {
     return this.getJson<SearchResponse>(`/search?${qs.toString()}`);
   }
 
-  async entity(name: string): Promise<EntityResponse> {
-    return this.getJson<EntityResponse>(`/entity/${encodeURIComponent(name)}`);
+  async entity(name: string, view: ViewMode = "gm"): Promise<EntityResponse> {
+    const qs = view === "player" ? "?view=player" : "";
+    return this.getJson<EntityResponse>(`/entity/${encodeURIComponent(name)}${qs}`);
   }
 
   async facts(params: FactsParams = {}): Promise<{ facts: Fact[] }> {
@@ -131,8 +162,13 @@ export class ApiClient {
     if (params.entity) qs.set("entity", params.entity);
     if (params.status) qs.set("status", params.status);
     if (params.chapter_max !== undefined) qs.set("chapter_max", String(params.chapter_max));
+    if (params.view) qs.set("view", params.view);
     const tail = qs.toString();
     return this.getJson<{ facts: Fact[] }>(tail ? `/facts?${tail}` : "/facts");
+  }
+
+  async exportPlayerWiki(): Promise<PlayerWikiResponse> {
+    return this.getJson<PlayerWikiResponse>("/export/player-wiki");
   }
 
   async relationships(entity?: string): Promise<{ relationships: Relationship[] }> {
@@ -251,13 +287,17 @@ export class ApiClient {
       try {
         const payload = await res.json();
         if (payload?.detail?.status === "llm_unavailable") {
-          throw new Error(
-            `llm_unavailable: ${payload.detail.reason ?? "no reason"}`,
+          const d = payload.detail;
+          throw new LlmUnavailableError(
+            `llm_unavailable: ${d.reason ?? "no reason"}`,
+            d.code ?? "unknown",
+            d.hint ?? "",
+            d.reason ?? "",
           );
         }
         if (payload?.detail) detail = JSON.stringify(payload.detail);
       } catch (jsonErr) {
-        if (jsonErr instanceof Error && jsonErr.message.includes("llm_unavailable")) {
+        if (jsonErr instanceof LlmUnavailableError) {
           throw jsonErr;
         }
         // fall through with the status detail

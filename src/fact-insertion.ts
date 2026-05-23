@@ -5,8 +5,6 @@ export interface FactToInsert {
   chapter_index: number | null;
 }
 
-const SECTION = /^##\s+/gm;
-
 function renderYamlEntry(fact: FactToInsert): string {
   const escapedClaim = fact.claim.replace(/"/g, '\\"');
   const escapedSource = fact.introduced_in.replace(/"/g, '\\"');
@@ -31,14 +29,14 @@ export function insertFactIntoSheet(content: string, fact: FactToInsert): string
   }
 
   const factsStart = headingMatch.index + headingMatch[0].length;
-  SECTION.lastIndex = factsStart + 1;
-  const nextSection = SECTION.exec(content);
+  const sectionRe = /^##\s+/gm;
+  sectionRe.lastIndex = factsStart + 1;
+  const nextSection = sectionRe.exec(content);
   const sectionEnd = nextSection ? nextSection.index : content.length;
 
   const before = content.slice(0, sectionEnd).replace(/\s+$/, "");
   const after = content.slice(sectionEnd);
   const insertion = `\n\n${yamlEntry}\n`;
 
-  const trailingNewlines = after.length > 0 ? "\n" : "\n";
-  return `${before}${insertion}${trailingNewlines}${after}`;
+  return `${before}${insertion}\n${after}`;
 }

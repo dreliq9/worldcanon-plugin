@@ -1,6 +1,6 @@
-import { Plugin } from "obsidian";
+import { Notice, Plugin, TFile, TFolder } from "obsidian";
 
-import { ApiClient } from "./api-client";
+import { ApiClient, type ViewMode } from "./api-client";
 import { DEFAULT_SETTINGS, WorldcanonSettings, WorldcanonSettingTab } from "./settings";
 import { StatusBar } from "./status-bar";
 import { SearchModal } from "./search-modal";
@@ -16,10 +16,48 @@ import { TRIAGE_VIEW_TYPE, TriageView } from "./triage-view";
 import { UnlinkedMentionsModal } from "./unlinked-mentions-modal";
 import { RenameEntityModal } from "./rename-entity-modal";
 import { TimelineModal } from "./timeline-modal";
+import type { PlayerWikiEntry } from "./api-client";
+import type { Fact } from "./types";
+
+
+function sanitizeFilename(name: string): string {
+  return name.replace(/[/\\:*?"<>|]/g, "_").trim() || "untitled";
+}
+
+
+function renderPlayerWikiEntry(entry: PlayerWikiEntry): string {
+  const meta = entry.metadata ?? {};
+  const type = String(meta.type ?? "entity");
+  const lines: string[] = ["---", `type: ${type}`, `name: ${entry.name}`, "---", "", `# ${entry.name}`, ""];
+  if (entry.body && entry.body.trim()) {
+    lines.push(entry.body.trim(), "");
+  }
+  if (entry.facts.length > 0) {
+    lines.push("## Known facts", "");
+    for (const fact of entry.facts) {
+      lines.push(`- ${renderFactForPlayer(fact)}`);
+    }
+    lines.push("");
+  }
+  return lines.join("\n");
+}
+
+
+function renderFactForPlayer(fact: Fact): string {
+  // Hinted facts are shown as rumors; red herrings appear as truth (the
+  // player believes them — that's the point). Revealed: no marker.
+  if (fact.player_visibility === "hinted") {
+    return `${fact.claim} *(rumored)*`;
+  }
+  return fact.claim;
+}
 
 export default class WorldcanonPlugin extends Plugin {
   settings!: WorldcanonSettings;
   apiClient!: ApiClient;
+  // Defaults to "gm" on every plugin load — safer than persisting, which
+  // could leave the user accidentally in player view across sessions.
+  currentView: ViewMode = "gm";
   private statusBar: StatusBar | null = null;
   private canonView: CanonView | null = null;
 
@@ -54,7 +92,10 @@ export default class WorldcanonPlugin extends Plugin {
       },
     });
 
-    this.registerView(CANON_VIEW_TYPE, (leaf) => new CanonView(leaf, this.apiClient));
+    this.registerView(
+      CANON_VIEW_TYPE,
+      (leaf) => new CanonView(leaf, this.apiClient, () => this.currentView),
+    );
 
     this.addCommand({
       id: "canon-open-pane",
@@ -149,6 +190,68 @@ export default class WorldcanonPlugin extends Plugin {
         new TimelineModal(this.app, this.apiClient).open();
       },
     });
+
+    this.addCommand({
+      id: "canon-toggle-player-view",
+      name: "Canon: Toggle GM / Player view",
+      callback: () => this.toggleView(),
+    });
+
+    this.addCommand({
+      id: "canon-export-player-wiki",
+      name: "Canon: Export player wiki",
+      callback: () => void this.exportPlayerWiki(),
+    });
+  }
+
+  toggleView(): void {
+    this.currentView = this.currentView === "gm" ? "player" : "gm";
+    new Notice(
+      this.currentView === "player"
+        ? "Canon: Player view — secrets hidden"
+        : "Canon: GM view — everything visible",
+    );
+    const workspace = (this.app as {
+      workspace: { getLeavesOfType(t: string): { view: unknown }[] };
+    }).workspace;
+    for (const leaf of workspace.getLeavesOfType(CANON_VIEW_TYPE)) {
+      const view = leaf.view as { refresh?(): Promise<void> };
+      if (typeof view.refresh === "function") void view.refresh();
+    }
+  }
+
+  private async exportPlayerWiki(): Promise<void> {
+    let res;
+    try {
+      res = await this.apiClient.exportPlayerWiki();
+    } catch (err) {
+      new Notice(`Export failed: ${(err as Error).message}`);
+      return;
+    }
+    const stamp = new Date().toISOString().slice(0, 10);
+    const folderPath = `exports/player-wiki-${stamp}`;
+    const vault = (this.app as {
+      vault: {
+        getAbstractFileByPath(p: string): TFolder | TFile | null;
+        createFolder(p: string): Promise<TFolder>;
+        create(p: string, content: string): Promise<TFile>;
+        modify(f: TFile, content: string): Promise<void>;
+      };
+    }).vault;
+    if (!vault.getAbstractFileByPath(folderPath)) {
+      await vault.createFolder(folderPath);
+    }
+    for (const entry of res.entries) {
+      const filename = `${folderPath}/${sanitizeFilename(entry.name)}.md`;
+      const markdown = renderPlayerWikiEntry(entry);
+      const existing = vault.getAbstractFileByPath(filename);
+      if (existing instanceof TFile) {
+        await vault.modify(existing, markdown);
+      } else {
+        await vault.create(filename, markdown);
+      }
+    }
+    new Notice(`Player wiki exported: ${res.entries.length} entries in ${folderPath}/`);
   }
 
   onunload(): void {

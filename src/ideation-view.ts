@@ -1,7 +1,7 @@
 import { ItemView, MarkdownView, Notice, TFile, WorkspaceLeaf } from "obsidian";
 
 import type { ApiClient } from "./api-client";
-import { ApiUnavailableError } from "./api-client";
+import { ApiUnavailableError, LlmUnavailableError } from "./api-client";
 import { renderFactCard } from "./fact-card";
 import { insertFactIntoSheet } from "./fact-insertion";
 import type { ProposedFact } from "./types";
@@ -74,8 +74,8 @@ export class IdeationView extends ItemView {
         .createDiv({ cls: "worldcanon-error" });
       if (err instanceof ApiUnavailableError) {
         errEl.setText("Sidecar unreachable.");
-      } else if (/llm_unavailable/i.test((err as Error).message)) {
-        errEl.setText("LLM unavailable — start Ollama or check your cloud key in Settings.");
+      } else if (err instanceof LlmUnavailableError) {
+        errEl.setText(err.hint || "LLM unavailable. Check that Ollama is running.");
       } else if (/not found/i.test((err as Error).message)) {
         errEl.setText(`Entity ${name} not found in canon. Save the sheet first, then try again.`);
       } else {

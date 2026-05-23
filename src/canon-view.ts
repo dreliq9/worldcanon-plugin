@@ -1,8 +1,8 @@
 import { ItemView, MarkdownView, TFile, WorkspaceLeaf, type EventRef } from "obsidian";
 
-import type { ApiClient } from "./api-client";
+import type { ApiClient, ViewMode } from "./api-client";
 import { ApiUnavailableError } from "./api-client";
-import type { EntityResponse } from "./types";
+import type { EntityResponse, Fact } from "./types";
 
 export const CANON_VIEW_TYPE = "worldcanon-canon-view";
 
@@ -12,7 +12,11 @@ export class CanonView extends ItemView {
   private currentNote: TFile | null = null;
   private contradictionTimer: number | null = null;
 
-  constructor(leaf: WorkspaceLeaf, private api: ApiClient) {
+  constructor(
+    leaf: WorkspaceLeaf,
+    private api: ApiClient,
+    private readonly getViewMode: () => ViewMode = () => "gm",
+  ) {
     super(leaf);
   }
 
@@ -72,6 +76,7 @@ export class CanonView extends ItemView {
       return;
     }
 
+    const view = this.getViewMode();
     for (const name of names) {
       const section = (this.contentEl as { createDiv(o: { cls: string }): HTMLElement })
         .createDiv({ cls: "worldcanon-entity" });
@@ -79,7 +84,7 @@ export class CanonView extends ItemView {
       header.setText(name);
 
       try {
-        const entity = await this.api.entity(name);
+        const entity = await this.api.entity(name, view);
         this.renderEntity(section, entity);
       } catch (err) {
         const msg = (section as { createEl(t: string, o: { cls: string }): { setText(s: string): void } })
@@ -97,8 +102,15 @@ export class CanonView extends ItemView {
 
   private renderShell(file: TFile | null): void {
     (this.contentEl as { empty(): void }).empty();
+    const view = this.getViewMode();
     const title = (this.contentEl as { createEl(t: string): { setText(s: string): void } }).createEl("h2");
-    title.setText(file ? `Canon · ${file.basename}` : "Canon");
+    const suffix = view === "player" ? "  ·  PLAYER VIEW" : "";
+    title.setText((file ? `Canon · ${file.basename}` : "Canon") + suffix);
+    if (view === "player") {
+      const banner = (this.contentEl as { createDiv(o: { cls: string }): HTMLElement & { setText(s: string): void } })
+        .createDiv({ cls: "worldcanon-player-banner" });
+      banner.setText("Player view — secrets hidden. Toggle with Canon: Toggle GM / Player view.");
+    }
     if (!file) {
       (this.contentEl as { createDiv(o: { cls: string }): { setText(t: string): void } })
         .createDiv({ cls: "worldcanon-empty" })
@@ -112,16 +124,27 @@ export class CanonView extends ItemView {
         .createDiv({ cls: "worldcanon-empty" }).setText("(no facts recorded)");
       return;
     }
+    const view = this.getViewMode();
     const list = (parent as unknown as { createEl(t: string, o: { cls: string }): HTMLElement })
       .createEl("ul", { cls: "worldcanon-fact-list" });
     for (const fact of entity.facts) {
       const li = (list as unknown as { createEl(t: string): HTMLElement }).createEl("li");
       (li as { addClass(c: string): void }).addClass(`worldcanon-fact-${fact.status}`);
+      if (view === "gm" && fact.player_visibility && fact.player_visibility !== "revealed") {
+        (li as { addClass(c: string): void }).addClass(`worldcanon-vis-${fact.player_visibility}`);
+        const vis = (li as { createEl(t: string, o: { cls: string }): { setText(s: string): void } })
+          .createEl("span", { cls: "worldcanon-fact-visibility" });
+        vis.setText(visibilityLabel(fact.player_visibility));
+        (li as { appendText(s: string): void }).appendText(" ");
+      }
       const status = (li as { createEl(t: string, o: { cls: string }): { setText(s: string): void } })
         .createEl("span", { cls: "worldcanon-fact-status" });
       status.setText(`[${fact.status}]`);
       (li as { appendText(s: string): void }).appendText(" ");
       (li as { appendText(s: string): void }).appendText(fact.claim);
+      if (view === "player" && fact.player_visibility === "hinted") {
+        (li as { appendText(s: string): void }).appendText(" (rumored)");
+      }
     }
   }
 
@@ -176,6 +199,20 @@ export class CanonView extends ItemView {
     }
   }
 }
+
+function visibilityLabel(v: Fact["player_visibility"]): string {
+  switch (v) {
+    case "secret":
+      return "🔒 SECRET";
+    case "hinted":
+      return "💭 hinted";
+    case "red_herring":
+      return "🪤 red herring";
+    default:
+      return "";
+  }
+}
+
 
 export function extractWikilinks(text: string): string[] {
   const out = new Set<string>();

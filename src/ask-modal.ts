@@ -1,7 +1,7 @@
 import { App, Modal, Notice, Setting } from "obsidian";
 
 import type { ApiClient } from "./api-client";
-import { ApiUnavailableError } from "./api-client";
+import { ApiUnavailableError, LlmUnavailableError } from "./api-client";
 
 export class AskModal extends Modal {
   private question = "";
@@ -85,8 +85,8 @@ export class AskModal extends Modal {
         .createEl("div", { cls: "worldcanon-error" });
       if (err instanceof ApiUnavailableError) {
         errEl.setText("Sidecar unreachable.");
-      } else if (/llm_unavailable/i.test((err as Error).message)) {
-        errEl.setText("LLM unavailable — start Ollama or check your cloud key in Settings.");
+      } else if (err instanceof LlmUnavailableError) {
+        errEl.setText(err.hint || "LLM unavailable. Check that Ollama is running.");
       } else {
         errEl.setText((err as Error).message);
       }

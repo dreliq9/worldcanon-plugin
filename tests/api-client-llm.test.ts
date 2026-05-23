@@ -1,4 +1,4 @@
-import { ApiClient, ApiUnavailableError } from "../src/api-client";
+import { ApiClient, ApiUnavailableError, LlmUnavailableError } from "../src/api-client";
 
 describe("ApiClient — LLM endpoints", () => {
   let originalFetch: typeof fetch;
@@ -63,14 +63,49 @@ describe("ApiClient — LLM endpoints", () => {
     await expect(c.ask({ question: "q" })).rejects.toBeInstanceOf(ApiUnavailableError);
   });
 
-  test("ask() surfaces 503 with reason for LLMUnavailable", async () => {
+  test("ask() throws LlmUnavailableError with code+hint on 503", async () => {
     fetchMock.mockResolvedValue({
       ok: false,
       status: 503,
       statusText: "Service Unavailable",
-      json: async () => ({ detail: { status: "llm_unavailable", reason: "Ollama down" } }),
+      json: async () => ({
+        detail: {
+          status: "llm_unavailable",
+          reason: "ollama unreachable at http://localhost:11434",
+          code: "ollama_not_running",
+          hint: "Ollama isn't running. Open the Ollama app from the Start menu.",
+        },
+      }),
     });
     const c = new ApiClient("http://127.0.0.1:7777");
-    await expect(c.ask({ question: "q" })).rejects.toThrow(/llm_unavailable/i);
+    let thrown: unknown = null;
+    try {
+      await c.ask({ question: "q" });
+    } catch (err) {
+      thrown = err;
+    }
+    expect(thrown).toBeInstanceOf(LlmUnavailableError);
+    const e = thrown as LlmUnavailableError;
+    expect(e.code).toBe("ollama_not_running");
+    expect(e.hint).toContain("Ollama");
+    expect(e.reason).toContain("ollama unreachable");
+  });
+
+  test("ask() defaults code+hint to safe values when sidecar omits them", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: async () => ({ detail: { status: "llm_unavailable", reason: "old sidecar" } }),
+    });
+    const c = new ApiClient("http://127.0.0.1:7777");
+    let thrown: unknown = null;
+    try {
+      await c.ask({ question: "q" });
+    } catch (err) {
+      thrown = err;
+    }
+    expect(thrown).toBeInstanceOf(LlmUnavailableError);
+    expect((thrown as LlmUnavailableError).code).toBe("unknown");
+    expect((thrown as LlmUnavailableError).hint).toBe("");
   });
 });

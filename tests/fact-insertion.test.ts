@@ -63,6 +63,25 @@ describe("insertFactIntoSheet", () => {
     expect(out).toContain("chapter_index: null");
   });
 
+  test("section regex state does not leak across calls", () => {
+    const noHeading = `# X\n\nbody.\n`;
+    insertFactIntoSheet(noHeading, {
+      claim: "first",
+      status: "canon",
+      introduced_in: "x",
+      chapter_index: null,
+    });
+    const withHeading = `# X\n\n## Facts\n\n- claim: "existing"\n  status: canon\n  introduced_in: x\n  chapter_index: null\n\n## Other\n\nfoo\n`;
+    const out = insertFactIntoSheet(withHeading, {
+      claim: "second",
+      status: "canon",
+      introduced_in: "x",
+      chapter_index: null,
+    });
+    expect(out.indexOf('claim: "second"')).toBeLessThan(out.indexOf("## Other"));
+    expect(out.indexOf('claim: "existing"')).toBeLessThan(out.indexOf('claim: "second"'));
+  });
+
   test("renders chapter_index integer without quotes", () => {
     const before = `# X\n\n## Facts\n\n`;
     const out = insertFactIntoSheet(before, {
