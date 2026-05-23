@@ -12,6 +12,7 @@ import { FACT_PROPOSAL_VIEW_TYPE, FactProposalView } from "./fact-proposal-view"
 import { logBrainstorm } from "./log-brainstorm";
 import { UnprocessedBrainstormModal } from "./unprocessed-modal";
 import { SuggestNamesModal } from "./suggest-names-modal";
+import { TRIAGE_VIEW_TYPE, TriageView } from "./triage-view";
 
 export default class WorldcanonPlugin extends Plugin {
   settings!: WorldcanonSettings;
@@ -107,6 +108,14 @@ export default class WorldcanonPlugin extends Plugin {
         new SuggestNamesModal(this.app, this.apiClient).open();
       },
     });
+
+    this.registerView(TRIAGE_VIEW_TYPE, (leaf) => new TriageView(leaf, this.apiClient));
+
+    this.addCommand({
+      id: "canon-triage-inbox",
+      name: "Canon: Triage inbox",
+      callback: () => void this.openTriageView(),
+    });
   }
 
   onunload(): void {
@@ -134,6 +143,10 @@ export default class WorldcanonPlugin extends Plugin {
       if (typeof view.setApiClient === "function") view.setApiClient(this.apiClient);
     }
     for (const leaf of workspace.getLeavesOfType(FACT_PROPOSAL_VIEW_TYPE)) {
+      const view = leaf.view as unknown as { setApiClient(c: ApiClient): void };
+      if (typeof view.setApiClient === "function") view.setApiClient(this.apiClient);
+    }
+    for (const leaf of workspace.getLeavesOfType(TRIAGE_VIEW_TYPE)) {
       const view = leaf.view as unknown as { setApiClient(c: ApiClient): void };
       if (typeof view.setApiClient === "function") view.setApiClient(this.apiClient);
     }
@@ -185,6 +198,22 @@ export default class WorldcanonPlugin extends Plugin {
       const view = leaves[0].view as FactProposalView;
       if (mode === "process") void view.processActiveNote();
       else void view.processSelection();
+    }
+  }
+
+  private async openTriageView(): Promise<void> {
+    const workspace = this.app.workspace;
+    let leaves = workspace.getLeavesOfType(TRIAGE_VIEW_TYPE);
+    if (leaves.length === 0) {
+      const rightLeaf = workspace.getRightLeaf(false);
+      if (!rightLeaf) return;
+      await rightLeaf.setViewState({ type: TRIAGE_VIEW_TYPE, active: true });
+      leaves = workspace.getLeavesOfType(TRIAGE_VIEW_TYPE);
+    }
+    if (leaves[0]) {
+      workspace.revealLeaf(leaves[0]);
+      const view = leaves[0].view as TriageView;
+      void view.reload();
     }
   }
 }
