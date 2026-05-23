@@ -15,6 +15,7 @@ import { SuggestNamesModal } from "./suggest-names-modal";
 import { TRIAGE_VIEW_TYPE, TriageView } from "./triage-view";
 import { UnlinkedMentionsModal } from "./unlinked-mentions-modal";
 import { RenameEntityModal } from "./rename-entity-modal";
+import { TimelineModal } from "./timeline-modal";
 
 export default class WorldcanonPlugin extends Plugin {
   settings!: WorldcanonSettings;
@@ -138,6 +139,14 @@ export default class WorldcanonPlugin extends Plugin {
           new RenameEntityModal(this.app, this.apiClient, file, oldName).open();
         }
         return true;
+      },
+    });
+
+    this.addCommand({
+      id: "canon-show-timeline",
+      name: "Canon: Show timeline",
+      callback: () => {
+        new TimelineModal(this.app, this.apiClient).open();
       },
     });
   }

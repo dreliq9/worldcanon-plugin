@@ -331,3 +331,23 @@
 }
 .worldcanon-rename-aliases { opacity: 0.8; font-size: 0.85rem; margin-bottom: 0.5rem; }
 .worldcanon-rename-aliases-list { margin: 0; padding-left: 1.2rem; }
+.worldcanon-timeline-status { opacity: 0.6; font-style: italic; }
+.worldcanon-timeline-list { max-height: 400px; overflow-y: auto; }
+.worldcanon-timeline-row {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.worldcanon-timeline-chapter {
+  font-family: var(--font-monospace);
+  font-size: 0.85rem;
+  opacity: 0.7;
+  min-width: 4rem;
+}
+.worldcanon-timeline-link {
+  cursor: pointer;
+  color: var(--text-accent);
+  text-decoration: none;
+}
+.worldcanon-timeline-link:hover { text-decoration: underline; }
