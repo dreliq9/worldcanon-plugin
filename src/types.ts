@@ -153,3 +153,25 @@ export interface NameSuggestion {
 export interface NameSuggestResponse {
   suggestions: NameSuggestion[];
 }
+
+export interface InboxItem {
+  path: string;
+  vault_path: string;
+  preview: string;
+  size: number;
+}
+
+export interface InboxResponse {
+  items: InboxItem[];
+}
+
+export type TriageClassification =
+  | "canon" | "drafts" | "research" | "discard"
+  | "entities/characters" | "entities/places"
+  | "entities/factions" | "entities/items" | "entities/events";
+
+export interface TriageSuggestResponse {
+  classification: TriageClassification;
+  confidence: "high" | "medium" | "low";
+  reasoning: string;
+}

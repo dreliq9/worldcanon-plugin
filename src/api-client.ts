@@ -7,11 +7,13 @@ import type {
   Fact,
   IdeationRespondResponse,
   IdeationStartResponse,
+  InboxResponse,
   NameSuggestResponse,
   ProposeFactsResponse,
   Relationship,
   SearchResponse,
   StatsResponse,
+  TriageSuggestResponse,
   UnprocessedBrainstormResponse,
 } from "./types";
 
@@ -71,6 +73,10 @@ export interface SuggestNamesParams {
   role?: string;
   vibe?: string;
   count?: number;
+}
+
+export interface TriageSuggestParams {
+  path: string;
 }
 
 export class ApiClient {
@@ -165,6 +171,14 @@ export class ApiClient {
 
   async suggestNames(params: SuggestNamesParams): Promise<NameSuggestResponse> {
     return this.postJson<NameSuggestResponse>("/name/suggest", params);
+  }
+
+  async listInbox(): Promise<InboxResponse> {
+    return this.getJson<InboxResponse>("/inbox");
+  }
+
+  async triageSuggest(params: TriageSuggestParams): Promise<TriageSuggestResponse> {
+    return this.postJson<TriageSuggestResponse>("/triage-suggest", params);
   }
 
   private async getJson<T>(path: string): Promise<T> {
