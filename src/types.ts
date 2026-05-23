@@ -15,6 +15,7 @@ export interface StatsResponse {
   rule_count: number;
   name_count: number;
   embedder: string;
+  llm_model: string;
 }
 
 export interface SearchHit {
@@ -174,4 +175,53 @@ export interface TriageSuggestResponse {
   classification: TriageClassification;
   confidence: "high" | "medium" | "low";
   reasoning: string;
+}
+
+export interface UnlinkedMention {
+  line: number;
+  col: number;
+  match: string;
+  suggested_link: string;
+}
+
+export interface UnlinkedMentionsResponse {
+  mentions: UnlinkedMention[];
+}
+
+export interface PlainTextRewrite {
+  file: string;
+  line: number;
+  col: number;
+  old: string;
+  new: string;
+}
+
+export interface AliasUpdate {
+  file: string;
+  kind: string;
+  old_value: string;
+  new_value: string;
+}
+
+export interface RenamePlan {
+  old_name: string;
+  new_name: string;
+  entity_file: string;
+  new_entity_file: string;
+  plain_text_rewrites: PlainTextRewrite[];
+  alias_updates: AliasUpdate[];
+}
+
+export interface TimelineEvent {
+  kind: "fact" | "event";
+  entity?: string;
+  name?: string;
+  claim?: string;
+  chapter_index?: number;
+  date?: string;
+  source_file: string;
+}
+
+export interface TimelineResponse {
+  events: TimelineEvent[];
 }

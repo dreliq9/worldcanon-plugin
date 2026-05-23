@@ -10,10 +10,13 @@ import type {
   InboxResponse,
   NameSuggestResponse,
   ProposeFactsResponse,
+  RenamePlan,
   Relationship,
   SearchResponse,
   StatsResponse,
+  TimelineResponse,
   TriageSuggestResponse,
+  UnlinkedMentionsResponse,
   UnprocessedBrainstormResponse,
 } from "./types";
 
@@ -77,6 +80,14 @@ export interface SuggestNamesParams {
 
 export interface TriageSuggestParams {
   path: string;
+}
+
+export interface UnlinkedMentionsParams {
+  file: string;
+}
+
+export interface PlanEntityRenameParams {
+  new_name: string;
 }
 
 export class ApiClient {
@@ -179,6 +190,23 @@ export class ApiClient {
 
   async triageSuggest(params: TriageSuggestParams): Promise<TriageSuggestResponse> {
     return this.postJson<TriageSuggestResponse>("/triage-suggest", params);
+  }
+
+  async unlinkedMentions(params: UnlinkedMentionsParams): Promise<UnlinkedMentionsResponse> {
+    const qs = new URLSearchParams();
+    qs.set("file", params.file);
+    return this.getJson<UnlinkedMentionsResponse>(`/unlinked-mentions?${qs.toString()}`);
+  }
+
+  async planEntityRename(oldName: string, params: PlanEntityRenameParams): Promise<RenamePlan> {
+    return this.postJson<RenamePlan>(
+      `/entity/${encodeURIComponent(oldName)}/rename`,
+      params,
+    );
+  }
+
+  async timeline(): Promise<TimelineResponse> {
+    return this.getJson<TimelineResponse>("/timeline");
   }
 
   private async getJson<T>(path: string): Promise<T> {
