@@ -294,3 +294,14 @@
   font-size: 0.8rem;
   padding: 0.25rem 0.5rem;
 }
+.worldcanon-mentions-status { opacity: 0.6; font-style: italic; padding: 0.25rem 0; }
+.worldcanon-mentions-list { margin-top: 0.5rem; }
+.worldcanon-mentions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.worldcanon-mentions-row-done { opacity: 0.5; }
+.worldcanon-mentions-loc { font-family: var(--font-monospace); font-size: 0.85rem; }

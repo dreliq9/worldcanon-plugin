@@ -13,6 +13,7 @@ import { logBrainstorm } from "./log-brainstorm";
 import { UnprocessedBrainstormModal } from "./unprocessed-modal";
 import { SuggestNamesModal } from "./suggest-names-modal";
 import { TRIAGE_VIEW_TYPE, TriageView } from "./triage-view";
+import { UnlinkedMentionsModal } from "./unlinked-mentions-modal";
 
 export default class WorldcanonPlugin extends Plugin {
   settings!: WorldcanonSettings;
@@ -115,6 +116,14 @@ export default class WorldcanonPlugin extends Plugin {
       id: "canon-triage-inbox",
       name: "Canon: Triage inbox",
       callback: () => void this.openTriageView(),
+    });
+
+    this.addCommand({
+      id: "canon-find-unlinked-mentions",
+      name: "Canon: Find unlinked mentions",
+      callback: () => {
+        new UnlinkedMentionsModal(this.app, this.apiClient).open();
+      },
     });
   }
 
