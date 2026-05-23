@@ -1,0 +1,53 @@
+name: Build plugin release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Assemble release folder
+        run: |
+          mkdir -p dist/release
+          cp manifest.json main.js styles.css install.sh install.ps1 INSTALL.md dist/release/ 2>/dev/null || true
+          cp manifest.json main.js styles.css dist/release/
+          cp install.sh dist/release/ 2>/dev/null || true
+          cp install.ps1 dist/release/ 2>/dev/null || true
+          cp INSTALL.md dist/release/ 2>/dev/null || true
+          cd dist && zip -r worldcanon-plugin.zip release/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldcanon-plugin
+          path: dist/worldcanon-plugin.zip
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/worldcanon-plugin.zip
