@@ -57,10 +57,10 @@ try {
     Write-Host "  1. Open your vault in Obsidian."
     Write-Host "  2. Settings -> Community plugins."
     Write-Host "  3. If 'Restricted mode' is on, click Turn off."
-    Write-Host "  4. Worldbuilder Canon should appear in the list — toggle it on."
+    Write-Host "  4. Worldbuilder Canon should appear in the list -- toggle it on."
     Write-Host ""
-    Write-Host "Look at the bottom-right of the Obsidian window — you should see"
-    Write-Host "'Canon: ✓ N chunks, M facts' in green."
+    Write-Host "Look at the bottom-right of the Obsidian window. You should see"
+    Write-Host "'Canon: OK N chunks, M facts' in green."
 }
 catch {
     Write-Host ""
